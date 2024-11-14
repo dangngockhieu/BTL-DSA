@@ -131,7 +131,9 @@ FCLayer::~FCLayer() {
 }
 
 xt::xarray<double> FCLayer::forward(xt::xarray<double> X) {
-    this->m_aCached_X = X;
+    if (this->m_trainable) {
+        this->m_aCached_X = X;
+    }
     xt::xarray<double> result = xt::linalg::tensordot(X, xt::transpose(m_aWeights), {1}, {1});
     
     if (this->m_bUse_Bias) {
@@ -141,7 +143,6 @@ xt::xarray<double> FCLayer::forward(xt::xarray<double> X) {
 }
 xt::xarray<double> FCLayer::backward(xt::xarray<double> DY) {
     this->m_unSample_Counter = this->m_unSample_Counter + DY.shape()[0];
-
     this->m_aGrad_W = xt::linalg::tensordot(xt::transpose(m_aCached_X), DY, {1}, {0});
 
     if (this->m_bUse_Bias) {
