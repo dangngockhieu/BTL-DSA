@@ -12,7 +12,6 @@ public:
     class Node;        // Forward declaration
     class Iterator;    // Forward declaration
     class BWDIterator; // Forward declaration
-
 protected:
     Node *head; // this node does not contain user's data
     Node *tail; // this node does not contain user's data
