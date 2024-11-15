@@ -15,34 +15,11 @@ ReLU::~ReLU() {
 }
 
 xt::xarray<double> ReLU::forward(xt::xarray<double> X) {
-    auto shape = X.shape();
-    xt::xarray<double> result = xt::zeros<double>(shape);
-    
-    this->m_aMask = xt::zeros<bool>(shape);
-    for (size_t i = 0; i < X.size(); ++i) {
-        if (X[i] <= 0) {
-            result[i] = 0;
-            m_aMask[i] = false;  
-        } else {
-            result[i] = X[i];
-            m_aMask[i] = true;
-        }
-    }
-    
-    return result;
+    this->m_aMask = (X >= 0);
+    return xt::where(this->m_aMask, X, 0.0);
 }
 xt::xarray<double> ReLU::backward(xt::xarray<double> DY) {
-    xt::xarray<double> a = xt::zeros<double>(DY.shape());
-    
-    for (size_t i = 0; i < DY.size(); ++i) {
-        if (!(m_aMask[i])) {
-            a[i] = 0; 
-        } else {
-            a[i] = DY[i]; 
-        }
-    }
-    
-    return a;
+    return xt::where(this->m_aMask, DY, 0.0);
 }
 
 string ReLU::get_desc(){
