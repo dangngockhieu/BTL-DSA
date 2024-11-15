@@ -15,13 +15,12 @@ Tanh::~Tanh() {
 }
 
 xt::xarray<double> Tanh::forward(xt::xarray<double> X) {
-    this->m_aCached_Y = (xt::exp(X)-xt::exp(-X))/(xt::exp(X)+ xt::exp(-X));  
+    this->m_aCached_Y = xt::tanh(X);
     return m_aCached_Y;
 }
 xt::xarray<double> Tanh::backward(xt::xarray<double> DY) {
-     xt::xarray<double> x = 1 - this->m_aCached_Y * this->m_aCached_Y;
-    
-    return DY * x;
+    xt::xarray<double> dX = DY * (1.0 - xt::square(m_aCached_Y));
+    return dX;
 }
 
 string Tanh::get_desc(){
