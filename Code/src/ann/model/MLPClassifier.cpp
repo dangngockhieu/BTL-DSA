@@ -72,17 +72,22 @@ double_tensor MLPClassifier::predict(
     int batch_idx = 1;
     unsigned long long nsamples = 0;
     for(auto batch: *pLoader){
-        double_tensor X = batch.getData();  
-        double_tensor Y = forward(X);       
-
-        if (!(first_batch)) {
-            results = xt::concatenate(xt::xtuple(results, Y), 0); 
-        } else {
-            first_batch = false;
-            results = Y;
+        double_tensor X = batch.getData();
+        double_tensor Y = forward(X);
+        if(!(first_batch)){
+           results = xt::concatenate(xt::xtuple(results, Y), 0);
         }
-        batch_idx += 1;
-        nsamples += X.shape()[0];  
+        else{
+            results = Y;
+            first_batch = false;
+        }
+        nsamples = nsamples + X.shape(0);
+        ////////////////////////////
+        info = fmt::format("{:<6d}/{:<12d}|{:<50d}\n",
+                    batch_idx, total_batch, nsamples);
+
+        cout << info;
+        batch_idx+=1; 
     }
     cout << "Prediction: End" << endl;
     
@@ -103,18 +108,16 @@ double_tensor MLPClassifier::evaluate(DataLoader<double, double>* pLoader){
     
     for(auto batch: *pLoader){
         double_tensor X = batch.getData();
-        double_tensor t = batch.getLabel();
-        
-        double_tensor Y = forward(X);
-        ulong_tensor y_true = xt::argmax(t, 1);
-        ulong_tensor y_pred = xt::argmax(Y, 1);
+        double_tensor Y = batch.getLabel();
+        double_tensor Y_pred = forward(X);
+
+        ulong_tensor y_true = xt::argmax(Y, 1);
+        ulong_tensor y_pred = xt::argmax(Y_pred, 1);
         
         meter.accumulate(y_true, y_pred);
     }
-    double_tensor metrics = meter.get_metrics();
-    
     this->set_working_mode(old_mode);
-    return metrics;
+    return meter.get_metrics();
 }
 //for the inference mode:end
 
@@ -147,19 +150,18 @@ void MLPClassifier::set_working_mode(bool trainable){
 
 //protected: for the training mode: begin
 double_tensor MLPClassifier::forward(double_tensor X){
-    double_tensor result = X;  
-
-    for (auto x : m_layers) {
-        result = x->forward(result);  
+     //YOUR CODE IS HERE
+    double_tensor xuat = X;
+    for(auto m: m_layers){
+        xuat = m->forward(xuat);
     }
-
-    return result;
+    return xuat;
 }
 void MLPClassifier::backward(){
-    double_tensor loss_grad = m_pLossLayer->backward();  
+    double_tensor DY = m_pLossLayer->backward();  
     // Bắt đầu từ lớp cuối cùng và đi ngược lại
-    for (auto i = m_layers.bbegin(); i != m_layers.bend(); ++i) {
-        loss_grad = (*i)->backward(loss_grad); 
+    for (auto i = m_layers.bbegin(); i != m_layers.bend(); i++) {
+        DY = (*i)->backward(DY); 
     }
 }
 //protected: for the training mode: end
