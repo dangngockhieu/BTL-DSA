@@ -19,10 +19,7 @@ double CrossEntropy::forward(xt::xarray<double> X, xt::xarray<double> t){
 }
 xt::xarray<double> CrossEntropy::backward() {
     const double EPSILON = 1e-7;
-  
-    auto y = xt::clip(this->m_aCached_Ypred, EPSILON, 1.0 - EPSILON);
-    
-    xt::xarray<double> dx = -(this->m_aYtarget / y) / y.shape()[0];  
-    
+    xt::xarray<double> dx = -(m_aYtarget / (m_aCached_Ypred + EPSILON));
+    dx /= m_aCached_Ypred.shape(0);
     return dx;
 }
