@@ -131,27 +131,44 @@ FCLayer::~FCLayer() {
 }
 
 xt::xarray<double> FCLayer::forward(xt::xarray<double> X) {
+    // Lưu trữ đầu vào nếu đang trong chế độ huấn luyện
     if (this->m_trainable) {
-        this->m_aCached_X = X;
+        m_aCached_X = X;
     }
-    xt::xarray<double> result = xt::linalg::tensordot(X, xt::transpose(m_aWeights), {1}, {1});
-    
+    if(X.shape()[0]==1){
+        xt::xarray<double> y = xt::linalg::dot(this->m_aWeights,X); 
+        if (this->m_bUse_Bias) {
+            y = y + xt::broadcast(this->m_aBias, y.shape());
+        } 
+        return y;
+    }
+    // Tính toán đầu ra của lớp FC
+    xt::xarray<double> y = xt::linalg::dot(X, xt::transpose(this->m_aWeights));
     if (this->m_bUse_Bias) {
-        result = result + m_aBias;
+        y = y + xt::broadcast(this->m_aBias, y.shape());
     }
-    return result;  
+    return y;  
 }
 xt::xarray<double> FCLayer::backward(xt::xarray<double> DY) {
+    if(DY.shape()[0]!=1){
     this->m_unSample_Counter = this->m_unSample_Counter + DY.shape()[0];
-    this->m_aGrad_W = xt::linalg::tensordot(xt::transpose(m_aCached_X), DY, {1}, {0});
-
-    if (this->m_bUse_Bias) {
-        this->m_aGrad_b = xt::sum(DY, {0});
+    xt::xarray<double> x = outer_stack(DY, this->m_aCached_X);
+    this->m_aGrad_W = xt::sum(x, {0});
+    if(this->m_bUse_Bias){
+        m_aGrad_b = xt::sum(DY, {0});
     }
-
-    xt::xarray<double> dX = xt::linalg::tensordot(DY, m_aWeights, {1}, {0});
-
+    xt::xarray<double> dX = xt::linalg::dot(DY, this->m_aWeights);
     return dX;
+    }
+    this->m_unSample_Counter ++;
+    xt::xarray<double> x = xt::linalg::dot(DY, xt::transpose(m_aCached_X));
+    this->m_aGrad_W += x;
+    if(m_bUse_Bias){
+        this->m_aGrad_b = DY;
+    }
+    xt::xarray<double> dX = xt::linalg::dot(xt::transpose(this->m_aWeights), DY);
+    return dX;
+    
 }
 
 int FCLayer::register_params(IParamGroup* ptr_group){
