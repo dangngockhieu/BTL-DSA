@@ -16,16 +16,29 @@ Softmax::~Softmax() {
 }
 
 xt::xarray<double> Softmax::forward(xt::xarray<double> X) {
-    auto a = xt::exp(X); 
-    auto sum_a = xt::sum(a, {m_nAxis}, xt::keep_dims);  
-    
-    this->m_aCached_Y = a / sum_a;
+    this->m_aCached_Y = softmax(X , this->m_nAxis);
     return m_aCached_Y;
 }
 xt::xarray<double> Softmax::backward(xt::xarray<double> DY) {
-    auto denta_Y = this->m_aCached_Y * DY;  
-    auto sum_denta_Y = xt::sum(denta_Y, {m_nAxis}, xt::keep_dims); 
-    auto dX = denta_Y - (sum_denta_Y * m_aCached_Y); 
+   // Check if DY has more than one dimension
+    if (DY.dimension() != 1) {
+        // Compute the outer product of m_aCached_Y with itself
+        xt::xarray<double> b = outer_stack(m_aCached_Y, m_aCached_Y);
+        // Create a diagonal matrix from m_aCached_Y
+        xt::xarray<double> a = diag_stack(this->m_aCached_Y);
+        // Subtract the outer product from the diagonal matrix
+        xt::xarray<double> c = a - b;
+        // Multiply the resulting matrix with DY
+        xt::xarray<double> dX = matmul_on_stack(c, DY);
+        return dX;
+    }
+    // Single dimension case
+    // Create a diagonal matrix from m_aCached_Y
+    xt::xarray<double> a = xt::diag(this->m_aCached_Y);
+    // Subtract the outer product from the diagonal matrix
+    xt::xarray<double> b = a - xt::linalg::outer(this->m_aCached_Y, this->m_aCached_Y);
+    // Multiply the resulting matrix with DY
+    xt::xarray<double> dX = xt::linalg::dot(b, DY);
     return dX;
 }
 
