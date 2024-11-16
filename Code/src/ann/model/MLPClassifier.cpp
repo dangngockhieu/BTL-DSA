@@ -108,11 +108,11 @@ double_tensor MLPClassifier::evaluate(DataLoader<double, double>* pLoader){
     
     for(auto batch: *pLoader){
         double_tensor X = batch.getData();
-        double_tensor Y = batch.getLabel();
-        double_tensor Y_pred = forward(X);
+        double_tensor t = batch.getLabel();
+        double_tensor Y = forward(X);
 
-        ulong_tensor y_true = xt::argmax(Y, 1);
-        ulong_tensor y_pred = xt::argmax(Y_pred, 1);
+        ulong_tensor y_true = xt::argmax(t, 1);
+        ulong_tensor y_pred = xt::argmax(Y, 1);
         
         meter.accumulate(y_true, y_pred);
     }
@@ -151,11 +151,11 @@ void MLPClassifier::set_working_mode(bool trainable){
 //protected: for the training mode: begin
 double_tensor MLPClassifier::forward(double_tensor X){
      //YOUR CODE IS HERE
-    double_tensor xuat = X;
-    for(auto m: m_layers){
-        xuat = m->forward(xuat);
+    double_tensor Y = X;
+    for(auto i = m_layers.begin();i != m_layers.end();++i){
+        Y = (*i)->forward(Y);
     }
-    return xuat;
+    return Y;
 }
 void MLPClassifier::backward(){
     double_tensor DY = m_pLossLayer->backward();  
