@@ -14,11 +14,11 @@ Sigmoid::Sigmoid(const Sigmoid& orig) {
 Sigmoid::~Sigmoid() {
 }
 xt::xarray<double> Sigmoid::forward(xt::xarray<double> X) {
-    this->m_aCached_Y = 1 / (1 + xt::exp(-X));  
+    this->m_aCached_Y = 1.0 / (1.0 + xt::exp(-X));  
     return m_aCached_Y;
 }
 xt::xarray<double> Sigmoid::backward(xt::xarray<double> DY) {
-    xt::xarray<double> x = this->m_aCached_Y * (1 - this->m_aCached_Y);
+    xt::xarray<double> x = this->m_aCached_Y * (1.0 - this->m_aCached_Y);
     
     return DY * x;
 }
