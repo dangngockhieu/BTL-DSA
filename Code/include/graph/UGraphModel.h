@@ -91,11 +91,11 @@ public:
             graph->add(vertices[i]);
         }
         for (int i = 0; i < nedges; ++i) {
-            typename AbstractGraph<T>::VertexNode* from = graph->getVertexNode(edges[i].from);
-            typename AbstractGraph<T>::VertexNode* to = graph->getVertexNode(edges[i].to);
-            from->connect(to,edges[i].weight);
+            typename AbstractGraph<T>::VertexNode* end = graph->getVertexNode(edges[i].to);
+            typename AbstractGraph<T>::VertexNode* begin = graph->getVertexNode(edges[i].from);
+            begin->connect(end,edges[i].weight);
             if(!graph->vertexEQ(edges[i].from,edges[i].to)){
-                to->connect(from,edges[i].weight);
+                end->connect(begin,edges[i].weight);
             }
         }
         return graph;
