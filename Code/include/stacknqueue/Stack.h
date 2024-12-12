@@ -26,11 +26,11 @@ public:
         this->list.add(item);
     }
     T pop(){
-        if(this->empty()) throw Underflow(toString());
+        if(this->empty()) throw Underflow("Stack");
         return this->list.removeAt(this->size()-1);
     }
     T& peek(){
-        if(this->empty()) throw Underflow(toString());
+        if(this->empty()) throw Underflow("Stack");
         return this->list.get(this->size()-1);
     }
     bool empty(){
