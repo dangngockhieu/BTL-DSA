@@ -25,11 +25,11 @@ public:
         this->list.add(item);
     }
     T pop(){
-        if(this->empty()) throw Underflow(toString());
+        if(this->empty()) throw Underflow("Queue");
         return this->list.removeAt(0);
     }
     T& peek(){
-        if(this->empty()) throw Underflow(toString());
+        if(this->empty()) throw Underflow("Queue");
         return this->list.get(0);
     }
     bool empty(){
