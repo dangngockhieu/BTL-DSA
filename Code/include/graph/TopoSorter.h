@@ -31,81 +31,84 @@ public:
     }
     // BFS
     DLinkedList<T> bfsSort(bool sorted=true){
-        DLinkedListSE<T> zeroList = listOfZeroInDegrees();
+        DLinkedListSE<T> zero = listOfZeroInDegrees();
         if (sorted) {
-            zeroList.sort();
+            zero.sort();
         }
         xMap<T, int> inMap = vertex2inDegree(hash_code);
-        DLinkedList<T> list;
-        Queue<T> queue;
-        for (auto i = zeroList.begin(); i != zeroList.end(); ++i) {
-            queue.push(*i);
+        DLinkedList<T> BFS_list;
+        Queue<T> q;
+        for (auto i = zero.begin(); i != zero.end(); ++i) {
+            q.push(*i);
         }
-        while (!queue.empty()) {
-            T vertex = queue.pop();
-            list.add(vertex);
-            DLinkedList<T> e = graph->getOutwardEdges(vertex);
-            for (auto i = e.begin(); i != e.end(); ++i) {
+        while (!q.empty()) {
+            T v = q.pop();
+            BFS_list.add(v);
+            DLinkedList<T> e = graph->getOutwardEdges(v);
+            auto i = e.begin();
+            while ( i != e.end()) {
                 T neighbor = (*i);
                 inMap.put(neighbor, inMap.get(neighbor) - 1);
                 if (inMap.get(neighbor) == 0) {
-                    queue.push(neighbor);
+                    q.push(neighbor);
                 }
+                ++i;
             }
         }
 
-        return list;
+        return BFS_list;
     }
     // DFS
      DLinkedList<T> dfsSort(bool sorted=true){
-        DLinkedListSE<T> zeroList = listOfZeroInDegrees();
+        DLinkedListSE<T> zero = listOfZeroInDegrees();
         if (sorted) {
-            zeroList.sort();
+            zero.sort();
         }
-
         xMap<T, bool> visited(hash_code);
-        DLinkedList<T> list;
-
-        for (auto i = zeroList.begin(); i != zeroList.end(); ++i) {
-            if (!visited.containsKey(*i)) {
-                dfsVisit(*i, visited, list);
+        DLinkedList<T> DFS_list;
+        auto i = zero.begin();
+        while ( i != zero.end()) {
+            if (visited.containsKey(*i)==false) {
+                help(*i, visited, DFS_list);
             }
+            ++i;
         }
 
-        return list;
+        return DFS_list;
     }
-    void dfsVisit(T vertex, xMap<T, bool>& visited, DLinkedList<T>& list) {
+    void help(T vertex, xMap<T, bool>& visited, DLinkedList<T>& list) {
         visited.put(vertex, true);
         DLinkedList<T> edges = graph->getOutwardEdges(vertex);
-        for (auto i = edges.begin(); i != edges.end(); ++i) {
+        auto i = edges.begin();
+        while ( i != edges.end()) {
             T neighbor = (*i);
             if (!visited.containsKey(neighbor)) {
-                dfsVisit(neighbor, visited, list);
+                help(neighbor, visited, list);
             }
+            ++i;
         }
         list.add(0,vertex);
     }
-
 
 protected:
 
     //Helper functions
     xMap<T, int> vertex2inDegree(int (*hash)(T&, int)){
         xMap<T, int> inMap(hash);
-        DLinkedList<T> v = graph->vertices(); 
-    
+        DLinkedList<T> v = graph->vertices();
         for (auto i = v.begin(); i != v.end(); ++i) {
             inMap.put((*i), 0);
         }
     
         for (auto i = v.begin(); i != v.end(); ++i) {
             DLinkedList<T> e = graph->getOutwardEdges(*i);
-            for (auto eIdx = e.begin(); eIdx != e.end(); ++eIdx) {
+            auto eIdx = e.begin();
+            while (eIdx != e.end()) {
                 T neighbor = *eIdx;
                 inMap.put(neighbor, inMap.get(neighbor) + 1);
+                ++eIdx;
             }
         }
-    
         return inMap;
     }
     xMap<T, int> vertex2outDegree(int (*hash)(T&, int)){
@@ -115,24 +118,24 @@ protected:
         for (auto i = v.begin(); i != v.end(); ++i) {
             outMap.put((*i), 0);
         }
-    
-        for (auto i = v.begin(); i != v.end(); ++i) {
+        auto i = v.begin();
+        while (i != v.end()) {
             DLinkedList<T> e = graph->getInwardEdges(*i);
             for (auto eIdx = e.begin(); eIdx != e.end(); ++eIdx) {
                 T neighbor = *eIdx;
                 outMap.put(neighbor, outMap.get(neighbor) + 1);
             }
+            ++i;
         }
-    
         return outMap;
     }
     DLinkedList<T> listOfZeroInDegrees(){
         DLinkedList<T> zeroList;
         xMap<T, int> inMap = vertex2inDegree(hash_code);
-        DLinkedList<T> keys = inMap.keys();
-        for (auto i = keys.begin(); i != keys.end(); ++i) {
+        DLinkedList<T> vertices = graph->vertices();
+        for (auto i = vertices.begin(); i != vertices.end(); ++i) {
             if (inMap.get(*i) == 0) {
-                zeroList.add(*i);
+                zeroList.add(0,*i);
             }
         }
         return zeroList;
