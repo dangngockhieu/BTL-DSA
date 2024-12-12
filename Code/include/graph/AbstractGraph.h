@@ -3,7 +3,7 @@
 #include "graph/IGraph.h"
 #include <string>
 #include <sstream>
-//#include <iomanip>
+#include <iomanip>
 using namespace std;
 
 template<class T>
@@ -270,13 +270,15 @@ public:
             return vertex;
         }
         void connect(VertexNode* to, float weight=0){
-            if(this->getEdge(to)!=nullptr){
-                this->removeTo(to);
+            if(this->getEdge(to)==nullptr){
+                Edge* e = new Edge(this, to, weight);
+                this->adList.add(e);
+                this->outDegree_+=1;
+                to->inDegree_+=1;
             }
-            Edge* e = new Edge(this, to, weight);
-            this->adList.add(e);
-            this->outDegree_+=1;
-            to->inDegree_+=1;
+            else{
+                this->getEdge(to)->weight=weight;
+            }
         }
         DLinkedList<T> getOutwardEdges(){
             DLinkedList<T> out;
