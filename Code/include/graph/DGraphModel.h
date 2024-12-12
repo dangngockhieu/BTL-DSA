@@ -4,7 +4,6 @@
 #include "stacknqueue/Queue.h"
 #include "stacknqueue/Stack.h"
 #include "hash/xMap.h"
-//#include "stacknqueue/PriorityQueue.h"
 #include "sorting/DLinkedListSE.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -27,7 +26,7 @@ public:
         if (begin == nullptr) {
             throw VertexNotFoundException(this->vertex2str(from));
         }
-        if (end == nullptr) {
+        if (!end) {
             throw VertexNotFoundException(this->vertex2str(to));
         }
             begin->connect(end, weight);
@@ -35,7 +34,7 @@ public:
     void disconnect(T from, T to){
         typename AbstractGraph<T>::VertexNode* end = this->getVertexNode(to);
         typename AbstractGraph<T>::VertexNode* begin = this->getVertexNode(from);
-        if (begin == nullptr) {
+        if (!begin) {
             throw VertexNotFoundException(this->vertex2str(from));
         }
         if (end == nullptr) {
@@ -53,15 +52,15 @@ public:
     }
     void remove(T vertex){
         typename AbstractGraph<T>::VertexNode* v = this->getVertexNode(vertex);
-        if (v == nullptr) {
+        if (!v) {
             throw VertexNotFoundException(this->vertex2str(vertex));
         }
         for (auto i = this->nodeList.begin(); i != this->nodeList.end(); ++i) {
         typename AbstractGraph<T>::VertexNode* node = *i;
-        if (node->getEdge(v) != nullptr) {
+        if (node->getEdge(v)) {
             node->removeTo(v);
         }
-        if (v->getEdge(node) != nullptr) {
+        if (v->getEdge(node)) {
             v->removeTo(node);
         }
         }
@@ -79,9 +78,9 @@ public:
             graph->add(vertices[i]);
         }
         for (int i = 0; i < nedges; ++i) {
-            typename AbstractGraph<T>::VertexNode* from = graph->getVertexNode(edges[i].from);
-            typename AbstractGraph<T>::VertexNode* to = graph->getVertexNode(edges[i].to);
-            from->connect(to,edges[i].weight);
+            typename AbstractGraph<T>::VertexNode* end = graph->getVertexNode(edges[i].to);
+            typename AbstractGraph<T>::VertexNode* begin = graph->getVertexNode(edges[i].from);
+            begin->connect(end,edges[i].weight);
         }
         return graph;
     }
